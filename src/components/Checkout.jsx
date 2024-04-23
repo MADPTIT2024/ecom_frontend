@@ -138,6 +138,29 @@ export default function Checkout() {
         shipment
       )
       console.log(shipmentRes.data)
+      const orderItems = cart.products.map((item) => ({
+        product_id: item.id,
+        quantity: item.quantity,
+        type_product: item.type_product,
+      }))
+
+      const payload = {
+        user_id: cart.user_id,
+        shipment_id: shipmentRes.data.id,
+        payment_id: paymentRes.data.id,
+        order_items: orderItems,
+      }
+
+      try {
+        const response = await axios.post(
+          'http://localhost:8005/orders/create/',
+          payload
+        )
+
+        console.log(response.data)
+      } catch (error) {
+        console.error('Error:', error)
+      }
     } catch (error) {
       console.log(error)
     }

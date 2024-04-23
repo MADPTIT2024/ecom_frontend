@@ -6,6 +6,7 @@ import { mobile } from '../responsive'
 import { Add, Remove } from '@mui/icons-material'
 import { useCart } from '../context/CartContext'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const Container = styled.div``
 
@@ -248,7 +249,9 @@ const Cart = () => {
               <SummaryItemText>Total</SummaryItemText>
               <SummaryItemPrice>$ {total.toFixed(2)}</SummaryItemPrice>
             </SummaryItem>
-            <Button>CHECKOUT NOW</Button>
+            <Link to={'/checkout'}>
+              <Button>CHECKOUT NOW</Button>
+            </Link>
           </Summary>
         </Bottom>
       </Wrapper>
