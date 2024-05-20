@@ -52,7 +52,7 @@ export default function Login() {
     event.preventDefault()
     const data = new FormData(event.currentTarget)
     const auth = {
-      email: data.get('email'),
+      username: data.get('username'),
       password: data.get('password'),
     }
     dispatch({ type: 'LOGIN_START' })
@@ -96,10 +96,10 @@ export default function Login() {
               margin='normal'
               required
               fullWidth
-              id='email'
-              label='email'
-              name='email'
-              autoComplete='email'
+              id='username'
+              label='username'
+              name='username'
+              autoComplete='username'
               autoFocus
             />
             <TextField

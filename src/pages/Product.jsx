@@ -1,15 +1,17 @@
+import { useState, useEffect, useContext } from 'react'
+import axios from 'axios'
 import styled from 'styled-components'
+import { Box, Typography, TextField, Rating, Button } from '@mui/material'
 import Announcement from '../components/Announcement'
 import Footer from '../components/Footer'
 import Navbar from '../components/Navbar'
 import Newsletter from '../components/Newsletter'
 import { mobile } from '../responsive'
 import { Add, Remove } from '@mui/icons-material'
-import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import axios from 'axios'
 import { get_product_type } from '../data'
 import { useCart } from '../context/CartContext'
+import { AuthContext } from '../context/AuthContext'
 
 const Container = styled.div``
 
@@ -49,40 +51,6 @@ const Price = styled.span`
   font-size: 40px;
 `
 
-// const FilterContainer = styled.div`
-//   width: 50%;
-//   margin: 30px 0px;
-//   display: flex;
-//   justify-content: space-between;
-//   ${mobile({ width: '100%' })}
-// `
-
-// const Filter = styled.div`
-//   display: flex;
-//   align-items: center;
-// `
-
-// const FilterTitle = styled.span`
-//   font-size: 20px;
-//   font-weight: 200;
-// `
-
-// const FilterColor = styled.div`
-//   width: 20px;
-//   height: 20px;
-//   border-radius: 50%;
-//   background-color: ${(props) => props.color};
-//   margin: 0px 5px;
-//   cursor: pointer;
-// `
-
-// const FilterSize = styled.select`
-//   margin-left: 10px;
-//   padding: 5px;
-// `
-
-// const FilterSizeOption = styled.option``
-
 const AddContainer = styled.div`
   width: 50%;
   display: flex;
@@ -108,28 +76,21 @@ const Amount = styled.span`
   margin: 0px 5px;
 `
 
-const Button = styled.button`
-  padding: 15px;
-  border: 2px solid teal;
-  background-color: white;
-  cursor: pointer;
-  font-weight: 500;
-
-  &:hover {
-    background-color: #f8f4f4;
-  }
+const Comment = styled.div`
+  margin: 10px 30px;
 `
 
 const Product = () => {
   const [product, setProduct] = useState({})
   const [quantity, setQuantity] = useState(1)
+  const [comment, setComment] = useState('')
+  const [rating, setRating] = useState(0)
+  const [comments, setComments] = useState([])
   const type_product = useLocation().pathname.split('/')[2]
   const id = useLocation().pathname.split('/')[3]
   const product_url = get_product_type(type_product)
-  console.log(type_product)
-
   const { cart } = useCart()
-  console.log(cart)
+  const { user, dispatch } = useContext(AuthContext)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -140,7 +101,22 @@ const Product = () => {
       setProduct(res.data)
     }
     fetchData()
+
+    // const fetchComment = async () => {
+    //   const res = await axios.get(
+    //     `http://localhost:${process.env.REACT_APP_COMMENT}/comments/filter/?type_product=${type_product}&product_id=${id}`
+    //   )
+    //   setComments(res.data)
+    // }
+    fetchComments()
   }, [product_url, type_product, id])
+
+  const fetchComments = async () => {
+    const res = await axios.get(
+      `http://localhost:${process.env.REACT_APP_COMMENT}/comments/filter/?type_product=${type_product}&product_id=${id}`
+    )
+    setComments(res.data)
+  }
 
   const handleQuantity = (type) => {
     if (type === 'dec') {
@@ -149,7 +125,36 @@ const Product = () => {
       setQuantity(quantity + 1)
     }
   }
-  console.log(cart.cart_id)
+
+  const handleCommentChange = (event) => {
+    setComment(event.target.value)
+  }
+
+  const handleRatingChange = (newValue) => {
+    setRating(newValue)
+  }
+
+  const handleSubmitComment = async () => {
+    try {
+      const res = await axios.post(
+        `http://localhost:${process.env.REACT_APP_COMMENT}/comments/`,
+        {
+          comment,
+          star: rating,
+          user: user.fullname.fname + ' ' + user.fullname.lname,
+          product_id: product.id,
+          type_product: type_product,
+        }
+      )
+      console.log(res.data)
+
+      setComment('')
+      setRating(0)
+      fetchComments()
+    } catch (error) {
+      console.error('Error submitting comment:', error)
+    }
+  }
 
   const handleClick = async () => {
     try {
@@ -159,12 +164,12 @@ const Product = () => {
         type_product: type_product,
         cart: cart.cart_id,
       })
-      console.log(res.data)
       window.location.reload()
     } catch (error) {
       console.log(error)
     }
   }
+
   return (
     <Container>
       <Navbar />
@@ -182,22 +187,6 @@ const Product = () => {
           <Title>{product.title}</Title>
           <Desc>{product.description}</Desc>
           <Price>$ {product.price}</Price>
-          {/* <FilterContainer>
-            <Filter>
-              <FilterTitle>Color</FilterTitle>
-              {product.color?.map((c) => (
-                <FilterColor color={c} key={c} onClick={() => setColor(c)} />
-              ))}
-            </Filter>
-            <Filter>
-              <FilterTitle>Size</FilterTitle>
-              <FilterSize onChange={(e) => setSize(e.target.value)}>
-                {product.size?.map((s) => (
-                  <FilterSizeOption key={s}>{s}</FilterSizeOption>
-                ))}
-              </FilterSize>
-            </Filter>
-          </FilterContainer> */}
           <AddContainer>
             <AmountContainer>
               <Remove onClick={() => handleQuantity('dec')} />
@@ -208,6 +197,42 @@ const Product = () => {
           </AddContainer>
         </InfoContainer>
       </Wrapper>
+      <Comment>
+        <Box my={2}>
+          <Typography variant='h5'>Rate this product:</Typography>
+          <Rating
+            value={rating}
+            onChange={(event, newValue) => handleRatingChange(newValue)}
+          />
+        </Box>
+        <Box my={2}>
+          <Typography variant='h5'>Write a comment:</Typography>
+          <TextField
+            variant='outlined'
+            fullWidth
+            multiline
+            rows={4}
+            value={comment}
+            onChange={handleCommentChange}
+          />
+        </Box>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={handleSubmitComment}
+        >
+          Submit Comment
+        </Button>
+        <Box my={2}>
+          <Typography variant='h5'>Comments:</Typography>
+          {comments.map((comment) => (
+            <div key={comment.id}>
+              <Typography>{comment.comment}</Typography>
+              <Rating value={comment.star} readOnly />
+            </div>
+          ))}
+        </Box>
+      </Comment>
       <Newsletter />
       <Footer />
     </Container>

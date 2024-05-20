@@ -64,19 +64,33 @@ export default function Register() {
     event.preventDefault()
     const data = new FormData(event.currentTarget)
     const registerUser = {
-      email: data.get('email'),
+      username: data.get('username'),
       password: data.get('password'),
-      name: data.get('name'),
-      tel: data.get('tel'),
+      fname: data.get('fname'),
+      lname: data.get('lname'),
+      noHouse: data.get('noHouse'),
+      street: data.get('street'),
       role: 'USER',
     }
     console.log(registerUser)
+    const registerInfo = {
+      account: {
+        username: registerUser.username,
+        password: registerUser.password,
+      },
+      fullname: {
+        fname: registerUser.fname,
+        lname: registerUser.lname,
+      },
+      address: {
+        noHouse: registerUser.noHouse,
+        street: registerUser.street,
+      },
+    }
     // setUser(registerUser)
+    console.log(registerInfo)
     try {
-      const res = await axios.post(
-        'http://localhost:8000/register/',
-        registerUser
-      )
+      const res = await axios.post('http://localhost:8000/users/', registerInfo)
       console.log(res.data)
       const cartRes = await axios.post('http://localhost:8004/create-cart/', {
         user_id: res.data.id,
@@ -118,11 +132,44 @@ export default function Register() {
                 <Grid item xs={12}>
                   <TextField
                     autoComplete='given-name'
-                    name='name'
+                    name='fname'
                     required
                     fullWidth
-                    id='name'
-                    label='Name'
+                    id='fname'
+                    label='First name'
+                    autoFocus
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    autoComplete='given-name'
+                    name='lname'
+                    required
+                    fullWidth
+                    id='lname'
+                    label='Last name'
+                    autoFocus
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    autoComplete='given-name'
+                    name='noHouse'
+                    required
+                    fullWidth
+                    id='noHouse'
+                    label='noHouse'
+                    autoFocus
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    autoComplete='given-name'
+                    name='street'
+                    required
+                    fullWidth
+                    id='street'
+                    label='Street'
                     autoFocus
                   />
                 </Grid>
@@ -130,10 +177,10 @@ export default function Register() {
                   <TextField
                     required
                     fullWidth
-                    id='email'
-                    label='Email Address'
-                    name='email'
-                    autoComplete='email'
+                    id='username'
+                    label='Username'
+                    name='username'
+                    autoComplete='username'
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -147,7 +194,7 @@ export default function Register() {
                     autoComplete='new-password'
                   />
                 </Grid>
-                <Grid item xs={12}>
+                {/* <Grid item xs={12}>
                   <TextField
                     required
                     fullWidth
@@ -157,7 +204,7 @@ export default function Register() {
                     id='tel'
                     autoComplete='new-tel'
                   />
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12}>
                   <FormControlLabel
                     control={
